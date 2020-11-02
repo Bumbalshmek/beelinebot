@@ -1,9 +1,9 @@
-telegram_token = '1326189620:AAHfjzIjGD2aaZICrfQs5fQyuRbjyjwih9g'
-Api_Auth_Token = '15821e0f-3e16-4ca0-8223-b48675fdeec9'
-Sms_ru_api_Token = 'D77504E1-F455-1671-CBED-C7C9B3A88893'
-table_name = 'sometable'
-database_name = 'somedatabase.db'
-webhook_ip = '46.181.240.60'
-webhook_ssl_certificate = '/home/jager/Desktop/kak/telechatbot/webhook_cert.pem'# Путь к сертификату
-webhook_ssl_private = '/home/jager/Desktop/kak/telechatbot/webhook_pkey.pem' # Путь к приватному ключу
+telegram_token = 'xxx'
+Api_Auth_Token = 'xxxx'
+Sms_ru_api_Token = 'xxx'
+table_name = 'xxxx'
+database_name = 'xxx.db'
+webhook_ip = 'xxx'
+webhook_ssl_certificate = 'xxx'# Путь к сертификату
+webhook_ssl_private = 'xxx' # Путь к приватному ключу
 side_numbers_forwarding = True
