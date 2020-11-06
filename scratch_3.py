@@ -19,6 +19,7 @@ webhook_ip = config.webhook_ip
 webhook_ssl_certificate = config.webhook_ssl_certificate
 webhook_ssl_private = config.webhook_ssl_private
 side_numbers_forwarding = config.side_numbers_forwarding
+channel_name = config.channel_name
 class SQLighter:
     def __init__(self, database):
         self.connection = sqlite3.connect(database)
@@ -171,6 +172,19 @@ def send_sms(number,auth_code,Sms_ru_api_token = Sms_ru_api_Token ):
         return "Enter sms code"
 def randadadad(sms_ru_api_token = Sms_ru_api_Token):
     response = requests.get('https://sms.ru/my/balance?api_id='+sms_ru_api_token+'&json=1')
+def getabonent_name(number,api_token = Api_Auth_Token):
+    headers = {
+        'X-MPBX-API-AUTH-TOKEN': ''+api_token+'',
+    }
+
+    response = requests.get('https://cloudpbx.beeline.ru/apis/portal/abonents/'+str(number)+'', headers=headers)
+    response = json.loads(response.text)
+    abonent_name = ''
+    if "firstName" in response:
+        abonent_name += response["firstName"]
+    if "lastName" in response:
+        abonent_name+=response["lastName"]
+    return  abonent_name
 WEBHOOK_HOST = webhook_ip
 WEBHOOK_PORT = 8443  # 443, 80, 88 или 8443 (порт должен быть открыт!)
 WEBHOOK_LISTEN = '0.0.0.0'  # На некоторых серверах придется указывать такой же IP, что и выше
@@ -260,7 +274,6 @@ def send_message(message):
                     dictic.update({i+1:' '+str(somethingg[i]['lastName'])})
                 else:
                     dictic.update({i+1:dictic[i+1]+' '+str(somethingg[i]['lastName'])})
-
         for i in range(len(somethingg)):
             dictic.update({i+1 : dictic[i+1]+' : '+somethingg[i]["phone"]})
         mama = ''
@@ -310,6 +323,9 @@ def send_message(message):
         pip = int(pip)
         users_dictionary[message.chat.id].append(pip)
         absolute_forwarding_change(users_dictionary[message.chat.id][2],users_dictionary[message.chat.id][5])
+        bot.send_message(channel_name, getabonent_name(users_dictionary[message.chat.id][2]) + '(' + str(
+            users_dictionary[message.chat.id][2]) + ')' + ' установил переадресацию всех вызовов на ' + getabonent_name(
+            users_dictionary[message.chat.id][5]) + '(' + str(users_dictionary[message.chat.id][2]) + ')')
         users_dictionary[message.chat.id].pop()
         users_dictionary[message.chat.id][0] = 3
         bot.send_message(message.chat.id,'Что вы хотите сделать? \n1. Убрать переадресацию с моего номера\n2. Установить переадресацию с моего номера на другой\n3. Показать статус переадресации на моем номере')
@@ -321,6 +337,8 @@ def send_message(message):
         bot.send_message(message.chat.id,
                          'Что вы хотите сделать? \n1. Убрать переадресацию с моего номера\n2. Установить переадресацию с моего номера на другой\n3. Показать статус переадресации на моем номере')
         absolute_forwarding_change(users_dictionary[message.chat.id][2], int(message.text))
+        bot.send_message(channel_name,getabonent_name(users_dictionary[message.chat.id][2]) + '(' + str(
+            users_dictionary[message.chat.id][2]) + ')'+' установил переадресацию всех вызовов на '+ (message.text))
     elif message.chat.id in users_dictionary and users_dictionary[message.chat.id][0] == 4 and message.text == str(2):
         if side_numbers_forwarding:
             bot.send_message(message.chat.id,
@@ -346,6 +364,9 @@ def send_message(message):
         users_dictionary[message.chat.id][0] = 8
     elif message.chat.id in users_dictionary and users_dictionary[message.chat.id][0] == 8 and message.text.isdigit() and int(message.text) <= 10 :
         forwarding_while_not_anwsering(users_dictionary[message.chat.id][2], users_dictionary[message.chat.id][5],int(message.text))
+        bot.send_message(channel_name, getabonent_name(users_dictionary[message.chat.id][2]) + '(' + str(
+            users_dictionary[message.chat.id][2]) + ')' + ' установил переадресацию когда номер не отвечает на ' + getabonent_name(
+            users_dictionary[message.chat.id][5]) + '(' + str(users_dictionary[message.chat.id][2]) + ')')
         users_dictionary[message.chat.id].pop()
         users_dictionary[message.chat.id][0] = 3
         bot.send_message(message.chat.id,'Что вы хотите сделать? \n1. Убрать переадресацию с моего номера\n2. Установить переадресацию с моего номера на другой\n3. Показать статус переадресации на моем номере')
@@ -363,6 +384,9 @@ def send_message(message):
         pip = int(pip)
         users_dictionary[message.chat.id].append(pip)
         busy_forwarding(users_dictionary[message.chat.id][2],users_dictionary[message.chat.id][-1])
+        bot.send_message(channel_name, getabonent_name(users_dictionary[message.chat.id][2]) + '(' + str(
+            users_dictionary[message.chat.id][2]) + ')' + ' установил переадресацию когда номер занят на ' + getabonent_name(
+            users_dictionary[message.chat.id][5]) + '(' + str(users_dictionary[message.chat.id][2]) + ')')
         users_dictionary[message.chat.id].pop()
         users_dictionary[message.chat.id][0] = 3
         bot.send_message(message.chat.id,
@@ -372,6 +396,8 @@ def send_message(message):
          bot.send_message(message.chat.id, 'Введите номер')
     elif message.chat.id in users_dictionary and users_dictionary[message.chat.id][0] == 11 and message.text.isdigit() and len(message.text) == 10 and message.text != users_dictionary[message.chat.id][2]:
         busy_forwarding(users_dictionary[message.chat.id][2],int(message.text))
+        bot.send_message(channel_name,getabonent_name(users_dictionary[message.chat.id][2]) + '(' + str(
+            users_dictionary[message.chat.id][2]) + ')'+' установил переадресацию когда номер занят на '+ (message.text))
         users_dictionary[message.chat.id][0] = 3
         bot.send_message(message.chat.id,'Что вы хотите сделать? \n1. Убрать переадресацию с моего номера\n2. Установить переадресацию с моего номера на другой\n3. Показать статус переадресации на моем номере')
     elif message.chat.id in users_dictionary and users_dictionary[message.chat.id][0] == 4 and message.text == str(4):
@@ -388,6 +414,9 @@ def send_message(message):
         pip = int(pip)
         users_dictionary[message.chat.id].append(pip)
         unavailable_forwarding(users_dictionary[message.chat.id][2], users_dictionary[message.chat.id][5])
+        bot.send_message(channel_name, getabonent_name(users_dictionary[message.chat.id][2]) + '(' + str(
+            users_dictionary[message.chat.id][2]) + ')' + ' установил переадресацию когда номер недоступен на ' + getabonent_name(
+            users_dictionary[message.chat.id][5]) + '(' + str(users_dictionary[message.chat.id][2]) + ')')
         users_dictionary[message.chat.id].pop()
         users_dictionary[message.chat.id][0] = 3
         bot.send_message(message.chat.id, 'Что вы хотите сделать? \n1. Убрать переадресацию с моего номера\n2. Установить переадресацию с моего номера на другой\n3. Показать статус переадресации на моем номере')
@@ -396,6 +425,8 @@ def send_message(message):
         bot.send_message(message.chat.id, 'Введите номер')
     elif message.chat.id in users_dictionary and users_dictionary[message.chat.id][0] == 13 and message.text.isdigit() and len(message.text) == 10 and message.text != users_dictionary[message.chat.id][2]:
         unavailable_forwarding(users_dictionary[message.chat.id][2], int(message.text))
+        bot.send_message(channel_name,getabonent_name(users_dictionary[message.chat.id][2]) + '(' + str(
+            users_dictionary[message.chat.id][2]) + ')'+' установил переадресацию когда номер недоступен на '+ (message.text))
         users_dictionary[message.chat.id][0] = 3
         bot.send_message(message.chat.id,'Что вы хотите сделать? \n1. Убрать переадресацию с моего номера\n2. Установить переадресацию с моего номера на другой\n3. Показать статус переадресации на моем номере')
     else:
